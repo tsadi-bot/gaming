@@ -6,9 +6,8 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { getGameById, games } from "@/lib/games"
-import { ArrowLeft, Calendar, Building2, Users, Monitor, Star, MessageSquare, ThumbsUp } from "lucide-react"
-
-
+import { WishlistButton } from "@/components/wishlist-button" // Import το button
+import { ArrowLeft, Star, MessageSquare, ThumbsUp } from "lucide-react"
 
 export async function generateStaticParams() {
   return games.map((game) => ({
@@ -53,8 +52,6 @@ export default async function GamePage({ params }) {
 
   return (
     <div className="min-h-screen bg-background">
-     
-
       {/* Hero Section with Cover */}
       <section className="relative">
         <div className="absolute inset-0 h-80 overflow-hidden">
@@ -121,6 +118,7 @@ export default async function GamePage({ params }) {
                 </div>
               </div>
 
+              {/* Actions Section */}
               <div className="flex flex-wrap gap-3">
                 <Button size="lg" className="gap-2">
                   <Star className="h-5 w-5" />
@@ -130,6 +128,8 @@ export default async function GamePage({ params }) {
                   <MessageSquare className="h-5 w-5" />
                   Write a Review
                 </Button>
+                {/* ΕΔΩ ΜΠΗΚΕ ΤΟ WISHLIST BUTTON */}
+                <WishlistButton gameId={game.id} size="lg" />
               </div>
             </div>
           </div>
@@ -141,7 +141,6 @@ export default async function GamePage({ params }) {
         <div className="grid gap-8 lg:grid-cols-3">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
-            {/* About */}
             <Card className="border-border bg-card">
               <CardHeader>
                 <CardTitle className="text-foreground">About</CardTitle>
@@ -153,7 +152,6 @@ export default async function GamePage({ params }) {
               </CardContent>
             </Card>
 
-            {/* Screenshots */}
             <Card className="border-border bg-card">
               <CardHeader>
                 <CardTitle className="text-foreground">Screenshots</CardTitle>
@@ -177,7 +175,6 @@ export default async function GamePage({ params }) {
               </CardContent>
             </Card>
 
-            {/* Reviews */}
             <Card className="border-border bg-card">
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="text-foreground">User Reviews</CardTitle>
@@ -208,81 +205,6 @@ export default async function GamePage({ params }) {
                       <ThumbsUp className="h-4 w-4" />
                       <span>{review.likes} found this helpful</span>
                     </button>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Sidebar */}
-          <div className="space-y-6">
-            <Card className="border-border bg-card">
-              <CardHeader>
-                <CardTitle className="text-foreground">Game Details</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <Calendar className="h-5 w-5 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Release Date</p>
-                    <p className="font-medium text-foreground">{game.releaseDate}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Building2 className="h-5 w-5 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Developer</p>
-                    <p className="font-medium text-foreground">{game.developer}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Users className="h-5 w-5 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Publisher</p>
-                    <p className="font-medium text-foreground">{game.publisher}</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <Monitor className="h-5 w-5 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Platforms</p>
-                    <div className="mt-1 flex flex-wrap gap-2">
-                      {game.platforms.map((platform) => (
-                        <Badge key={platform} variant="secondary">
-                          {platform}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Rating Distribution */}
-            <Card className="border-border bg-card">
-              <CardHeader>
-                <CardTitle className="text-foreground">Rating Distribution</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {[
-                  { stars: 5, percentage: 65 },
-                  { stars: 4, percentage: 20 },
-                  { stars: 3, percentage: 10 },
-                  { stars: 2, percentage: 3 },
-                  { stars: 1, percentage: 2 }
-                ].map((item) => (
-                  <div key={item.stars} className="flex items-center gap-3">
-                    <span className="w-4 text-sm text-muted-foreground">{item.stars}</span>
-                    <Star className="h-4 w-4 fill-primary text-primary" />
-                    <div className="flex-1 h-2 rounded-full bg-secondary overflow-hidden">
-                      <div
-                        className="h-full rounded-full bg-primary"
-                        style={{ width: `${item.percentage}%` }}
-                      />
-                    </div>
-                    <span className="w-10 text-right text-sm text-muted-foreground">
-                      {item.percentage}%
-                    </span>
                   </div>
                 ))}
               </CardContent>
