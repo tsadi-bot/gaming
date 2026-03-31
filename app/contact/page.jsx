@@ -1,247 +1,134 @@
-"use client"
+"use client";
 
-import React, { useState } from "react"
-import { Mail, MessageSquare, Twitter, Github, Send, Loader2, CheckCircle2 } from "lucide-react"
+import React, { useState } from 'react';
+import { Mail, MessageSquare, Twitter, Github, Send, AlertCircle, CheckCircle2, Copy, Check } from 'lucide-react';
 
-export default function ContactPage() {
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isSuccess, setIsSuccess] = useState(false)
+const ContactPage = () => {
+  const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' });
+  const [status, setStatus] = useState({ submitting: false, success: false, error: null });
+  const [copied, setCopied] = useState(false);
 
-  // Λογική αποστολής φόρμας
-  async function handleSubmit(formData) {
-    setIsSubmitting(true)
-    
-    // Εδώ προσομοιώνουμε μια καθυστέρηση δικτύου 1.5 δευτερολέπτου
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    
-    const data = {
-      name: formData.get("name"),
-      email: formData.get("email"),
-      subject: formData.get("subject"),
-      message: formData.get("message"),
+  const myEmail = "papandreouthodores7@gmail.com";
+
+  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(myEmail);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setStatus({ submitting: true, success: false, error: null });
+
+    try {
+      // Χρησιμοποιούμε το fetch με όλα τα απαραίτητα headers για να μην "χτυπάει"
+      const response = await fetch("https://formspree.io", {
+        method: "POST",
+        body: JSON.stringify(formData),
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setStatus({ submitting: false, success: true, error: null });
+        setFormData({ name: '', email: '', subject: '', message: '' });
+      } else {
+        throw new Error(data.error || "Κάτι πήγε στραβά. Δοκίμασε ξανά.");
+      }
+    } catch (err) {
+      // Αν το error είναι "Failed to fetch", εμφανίζουμε πιο κατανοητό μήνυμα
+      setStatus({ 
+        submitting: false, 
+        success: false, 
+        error: "Σφάλμα σύνδεσης. Βεβαιώσου ότι το Formspree ID είναι σωστό." 
+      });
     }
-
-    // Εδώ θα έμπαινε η κλήση στο backend/API σου
-    console.log("Τα δεδομένα στάλθηκαν:", data)
-    
-    setIsSubmitting(false)
-    setIsSuccess(true)
-    
-    // Επαναφορά της φόρμας μετά από 5 δευτερόλεπτα
-    setTimeout(() => setIsSuccess(false), 5000)
-  }
+  };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden border-b border-border">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-background" />
-        <div className="container relative mx-auto px-4 py-16 md:py-24">
-          <div className="mx-auto max-w-2xl text-center">
-            <h1 className="mb-4 text-balance text-4xl font-bold tracking-tight text-foreground md:text-5xl">
-              Get in <span className="text-primary">Touch</span>
-            </h1>
-            <p className="text-pretty text-lg text-muted-foreground">
-              Have a question, suggestion, or just want to say hello? We&apos;re here for it.
-            </p>
-          </div>
+    <div className="min-h-screen bg-[#0a0a0a] text-white transition-colors duration-300 font-sans relative overflow-hidden">
+      
+      {/* Background Glows */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none opacity-40">
+        <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-purple-900/30 blur-[120px] rounded-full"></div>
+        <div className="absolute top-[20%] -right-[10%] w-[30%] h-[30%] bg-blue-900/20 blur-[120px] rounded-full"></div>
+      </div>
+
+      <div className="relative z-10 max-w-6xl mx-auto px-6 py-20">
+        <div className="text-center mb-16">
+          <h1 className="text-5xl md:text-6xl font-extrabold mb-4 bg-gradient-to-r from-white to-gray-500 bg-clip-text text-transparent italic tracking-tighter">
+            Get in Touch
+          </h1>
         </div>
-      </section>
 
-      <section className="container mx-auto px-4 py-16 flex-grow">
-        <div className="mx-auto grid max-w-5xl gap-12 lg:grid-cols-2">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
           
-          {/* Contact Form Container */}
-          <div className="rounded-xl border border-border bg-card p-8 shadow-sm">
-            <div className="mb-6 flex items-center gap-3">
-              <MessageSquare className="h-5 w-5 text-primary" />
-              <h2 className="text-xl font-bold text-foreground">Send a Message</h2>
-            </div>
-
-            {isSuccess ? (
-              <div className="flex h-[400px] flex-col items-center justify-center text-center animate-in fade-in zoom-in duration-300">
-                <CheckCircle2 className="mb-4 h-12 w-12 text-green-500" />
-                <h3 className="text-lg font-semibold text-foreground">Message Sent!</h3>
-                <p className="text-sm text-muted-foreground">We&apos;ll get back to you as soon as possible.</p>
-                <button 
-                  onClick={() => setIsSuccess(false)}
-                  className="mt-6 text-sm text-primary hover:underline"
-                >
-                  Send another message
-                </button>
+          {/* Form Side */}
+          <div className="lg:col-span-7 bg-[#111111]/80 backdrop-blur-xl border border-white/5 p-8 rounded-3xl shadow-2xl">
+            {status.success ? (
+              <div className="py-20 text-center animate-in fade-in zoom-in duration-500">
+                <CheckCircle2 className="text-green-400 mx-auto mb-6" size={60} />
+                <h2 className="text-3xl font-bold mb-2">Sent Successfully!</h2>
+                <button onClick={() => setStatus({ ...status, success: false })} className="text-purple-400 font-bold hover:underline mt-4">Send New Message</button>
               </div>
             ) : (
-              <form action={handleSubmit} className="flex flex-col gap-5">
-                <div className="flex flex-col gap-1.5">
-                  <label htmlFor="name" className="text-sm font-medium text-foreground">Name</label>
-                  <input
-                    id="name"
-                    name="name"
-                    type="text"
-                    required
-                    placeholder="Your name"
-                    className="h-10 rounded-lg border border-border bg-secondary/50 px-4 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-                  />
+              <>
+                <div className="flex items-center gap-3 mb-8 text-xl font-bold tracking-tight uppercase italic">
+                  <MessageSquare className="text-purple-500" size={24} />
+                  <h2>Send a Message</h2>
                 </div>
+                
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <input name="name" required value={formData.name} onChange={handleChange} placeholder="NAME" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 outline-none focus:border-purple-500 transition-all font-bold text-sm" />
+                    <input name="email" type="email" required value={formData.email} onChange={handleChange} placeholder="EMAIL" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 outline-none focus:border-purple-500 transition-all font-bold text-sm" />
+                  </div>
+                  <input name="subject" required value={formData.subject} onChange={handleChange} placeholder="SUBJECT" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 outline-none focus:border-purple-500 transition-all font-bold text-sm" />
+                  <textarea name="message" rows="5" required value={formData.message} onChange={handleChange} placeholder="MESSAGE..." className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 outline-none focus:border-purple-500 transition-all font-bold resize-none text-sm"></textarea>
 
-                <div className="flex flex-col gap-1.5">
-                  <label htmlFor="email" className="text-sm font-medium text-foreground">Email</label>
-                  <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    required
-                    placeholder="you@example.com"
-                    className="h-10 rounded-lg border border-border bg-secondary/50 px-4 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                  <label htmlFor="subject" className="text-sm font-medium text-foreground">Subject</label>
-                  <input
-                    id="subject"
-                    name="subject"
-                    type="text"
-                    required
-                    placeholder="What's this about?"
-                    className="h-10 rounded-lg border border-border bg-secondary/50 px-4 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                  <label htmlFor="message" className="text-sm font-medium text-foreground">Message</label>
-                  <textarea
-                    id="message"
-                    name="message"
-                    rows={5}
-                    required
-                    placeholder="Tell us what's on your mind..."
-                    className="resize-none rounded-lg border border-border bg-secondary/50 px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="flex items-center justify-center gap-2 rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground transition-all hover:opacity-90 disabled:opacity-70"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Sending...
-                    </>
-                  ) : (
-                    <>
-                      <Send className="h-4 w-4" />
-                      Send Message
-                    </>
+                  {status.error && (
+                    <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-4 rounded-xl flex items-center gap-2 text-xs font-bold uppercase italic">
+                      <AlertCircle size={16} /> {status.error}
+                    </div>
                   )}
-                </button>
-              </form>
+
+                  <button type="submit" disabled={status.submitting} className="w-full bg-white text-black font-black py-5 rounded-xl hover:bg-purple-600 hover:text-white transition-all transform active:scale-95 shadow-xl text-xl italic tracking-tighter uppercase">
+                    {status.submitting ? "Sending..." : "Send Message"}
+                  </button>
+                </form>
+              </>
             )}
           </div>
 
-          {/* Info Panel */}
-          <div className="flex flex-col gap-8 text-left">
-            {/* Direct Contact */}
-            <div className="rounded-xl border border-border bg-card p-8 transition-all hover:border-primary/50">
-              <div className="mb-6 flex items-center gap-3">
-                <div className="rounded-lg bg-primary/10 p-2 text-primary">
-                  <Mail className="h-5 w-5" />
+          {/* Info Side */}
+          <div className="lg:col-span-5 space-y-8">
+            <div className="bg-[#111111]/80 backdrop-blur-xl border border-white/5 p-8 rounded-3xl shadow-xl">
+              <div className="flex items-center gap-3 mb-8 text-xl font-bold tracking-tight uppercase italic">
+                <Mail className="text-blue-500" size={24} />
+                <h2>Direct Contact</h2>
+              </div>
+              <div className="bg-white/5 p-5 rounded-2xl border border-white/5 flex items-center justify-between group">
+                <div className="overflow-hidden">
+                  <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1 italic">Email</p>
+                  <p className="text-lg font-bold truncate italic">{myEmail}</p>
                 </div>
-                <h2 className="text-xl font-bold text-foreground">Direct Contact</h2>
+                <button onClick={copyToClipboard} className="p-3 bg-white/10 rounded-xl hover:bg-white hover:text-black transition-all">
+                  {copied ? <Check size={20} /> : <Copy size={20} />}
+                </button>
               </div>
-              
-              <div className="grid gap-6 text-left">
-                {[
-                  { label: "General Inquiries", email: "hello@gamerate.gg" },
-                  { label: "Business & Press", email: "press@gamerate.gg" },
-                  { label: "Bug Reports", email: "bugs@gamerate.gg" }
-                ].map((item) => (
-                  <div key={item.label} className="flex flex-col gap-1">
-                    <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      {item.label}
-                    </span>
-                    <a
-                      href={`mailto:${item.email}`}
-                      className="text-sm font-medium text-foreground transition-colors hover:text-primary"
-                    >
-                      {item.email}
-                    </a>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Socials */}
-            <div className="rounded-xl border border-border bg-card p-8 transition-all hover:border-primary/50">
-              <h2 className="mb-6 text-xl font-bold text-foreground">Find Us Online</h2>
-              <div className="flex flex-col gap-3">
-                <a
-                  href="https://twitter.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-3 rounded-lg border border-border bg-secondary/50 px-4 py-3 text-sm font-medium text-foreground transition-all hover:bg-secondary hover:text-primary"
-                >
-                  <Twitter className="h-4 w-4" />
-                  @GameRateGG on X
-                </a>
-                <a
-                  href="https://github.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-3 rounded-lg border border-border bg-secondary/50 px-4 py-3 text-sm font-medium text-foreground transition-all hover:bg-secondary hover:text-primary"
-                >
-                  <Github className="h-4 w-4" />
-                  ://github.com
-                </a>
-              </div>
-            </div>
-
-            {/* Response info */}
-            <div className="flex items-start gap-3 rounded-lg bg-primary/5 p-4 border border-primary/10">
-              <div className="mt-0.5 text-primary">
-                <MessageSquare className="h-4 w-4" />
-              </div>
-              <p className="text-sm leading-relaxed text-muted-foreground">
-                We typically respond within <span className="font-semibold text-foreground">24–48 hours</span>.
-              </p>
             </div>
           </div>
+
         </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="border-t border-border bg-card/50 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-12">
-          <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
-            <div className="flex flex-col items-center gap-2 md:items-start">
-              <span className="text-lg font-bold tracking-tight text-foreground">
-                Game<span className="text-primary">Rate</span>
-              </span>
-              <p className="text-sm text-muted-foreground text-center md:text-left">
-                Your trusted source for game reviews and ratings.
-              </p>
-            </div>
-            
-            <nav className="flex flex-wrap justify-center gap-x-8 gap-y-4">
-              {["About", "Contact", "Privacy", "Terms"].map((item) => (
-                <a 
-                  key={item}
-                  href={`/${item.toLowerCase()}`} 
-                  className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
-                >
-                  {item}
-                </a>
-              ))}
-            </nav>
-          </div>
-          
-          <div className="mt-12 border-t border-border/50 pt-8 text-center text-xs text-muted-foreground">
-            © {new Date().getFullYear()} GameRate. Made with ❤️ for gamers.
-          </div>
-        </div>
-      </footer>
+      </div>
     </div>
-  )
-}
+  );
+};
+
+export default ContactPage;
