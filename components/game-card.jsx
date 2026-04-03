@@ -1,48 +1,59 @@
-import Image from "next/image"
-import Link from "next/link"
-import { Star } from "lucide-react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+"use client";
 
+import { Star, ArrowRight } from "lucide-react";
+import Link from "next/link"; // Εισαγωγή του Link
 
-
-
-export function GameCard({ game }) {
+export default function GameCard({ game }) {
   return (
-    <Link href={`/game/${game.id}`}>
-      <Card className="group overflow-hidden border-border bg-card transition-all duration-300 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10">
-        <div className="relative aspect-[3/4] overflow-hidden">
-          <Image
-            src={game.coverImage}
+    // Τυλίγουμε όλη την κάρτα με Link για να είναι clickable παντού
+    <Link href={`/game/${game.id}`} className="group block h-full">
+      <div className="relative bg-[#111] rounded-2xl overflow-hidden border border-white/5 group-hover:border-blue-500/40 group-hover:shadow-[0_10px_40px_-15px_rgba(59,130,246,0.3)] transition-all duration-500 flex flex-col h-full">
+        
+        {/* Image Container */}
+        <div className="aspect-[16/9] overflow-hidden bg-zinc-900 relative">
+          <img 
+            src={game.coverImage} 
             alt={game.title}
-            fill
-            className="object-cover transition-transform duration-300 group-hover:scale-105"
+            loading="lazy"
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent" />
-          <div className="absolute bottom-0 left-0 right-0 p-4">
-            <div className="flex items-center gap-2 text-primary">
-              <Star className="h-5 w-5 fill-primary" />
-              <span className="text-lg font-bold">{game.rating}</span>
-              <span className="text-sm text-muted-foreground">({game.reviewCount.toLocaleString()})</span>
+          
+          {/* Rating Badge */}
+          <div className="absolute top-3 right-3 bg-black/80 backdrop-blur-md px-2 py-1 rounded-lg border border-white/10 flex items-center gap-1.5 shadow-xl">
+            <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
+            <span className="text-blue-400 text-xs font-black tracking-tighter">{game.rating}</span>
+          </div>
+
+          <div className="absolute inset-0 bg-gradient-to-t from-[#111] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        </div>
+        
+        {/* Content Section */}
+        <div className="p-5 flex flex-col flex-grow">
+          <div className="mb-3">
+            <h3 className="font-bold text-lg leading-tight text-white group-hover:text-blue-400 transition-colors duration-300 truncate">
+              {game.title}
+            </h3>
+            
+            <div className="flex flex-wrap gap-2 mt-2">
+              {game.genres?.slice(0, 2).map((genre, index) => (
+                <span key={index} className="text-[9px] uppercase font-bold tracking-widest text-zinc-500 bg-white/5 px-2 py-1 rounded border border-white/5">
+                  {genre}
+                </span>
+              ))}
             </div>
           </div>
-        </div>
-        <CardContent className="p-4">
-          <h3 className="mb-2 line-clamp-1 text-lg font-semibold text-card-foreground group-hover:text-primary transition-colors">
-            {game.title}
-          </h3>
-          <p className="mb-3 line-clamp-2 text-sm text-muted-foreground">
+
+          <p className="text-zinc-400 text-xs line-clamp-2 mb-5 leading-relaxed flex-grow">
             {game.description}
           </p>
-          <div className="flex flex-wrap gap-2">
-            {game.genres.slice(0, 2).map((genre) => (
-              <Badge key={genre} variant="secondary" className="text-xs">
-                {genre}
-              </Badge>
-            ))}
+
+          {/* Το κουμπί τώρα είναι ένα div που μοιάζει με κουμπί, αφού το Link είναι εξωτερικά */}
+          <div className="w-full py-2.5 bg-blue-600/10 group-hover:bg-blue-600 text-blue-400 group-hover:text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300 border border-blue-600/20 group-hover:border-blue-600 flex items-center justify-center gap-2">
+            View Details
+            <ArrowRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-all transform group-hover:translate-x-1" />
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </Link>
-  )
+  );
 }

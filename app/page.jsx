@@ -1,4 +1,4 @@
-import { GameCard } from "@/components/game-card"
+import GameCard from "@/components/game-card";
 import { games } from "@/lib/games"
 import { TrendingUp, Trophy, Sparkles } from "lucide-react"
 import Image from "next/image"

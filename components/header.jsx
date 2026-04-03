@@ -18,7 +18,7 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        
+
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 transition-colors hover:opacity-80">
           <Gamepad2 className="h-8 w-8 text-primary" />
@@ -33,11 +33,14 @@ export function Header() {
           <Link href="/top-rated" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
             Top Rated
           </Link>
+          <Link href="/editors-choice" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
+            Editor's Choice
+          </Link>
           <Link href="/new-releases" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
             New Releases
           </Link>
           <Link href="/contact" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
-           Contact
+            Contact
           </Link>
         </nav>
 

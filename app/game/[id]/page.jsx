@@ -1,217 +1,89 @@
-import { notFound } from "next/navigation"
+"use client"
+
+import { useState, useEffect } from "react"
+import { notFound, useParams } from "next/navigation" // Πρόσθεσα το useParams
 import Image from "next/image"
 import Link from "next/link"
 import { RatingStars } from "@/components/rating-stars"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { getGameById, games } from "@/lib/games"
-import { WishlistButton } from "@/components/wishlist-button" // Import το button
-import { ArrowLeft, Star, MessageSquare, ThumbsUp } from "lucide-react"
+import { Card, CardTitle } from "@/components/ui/card"
+import { getGameById } from "@/lib/games"
+import { WishlistButton } from "@/components/wishlist-button"
+import ReviewModal from "@/components/review-modal" 
+import { ArrowLeft, Star, MessageSquare, Calendar, ShieldCheck, Monitor } from "lucide-react"
 
-export async function generateStaticParams() {
-  return games.map((game) => ({
-    id: game.id,
-  }))
-}
+export default function GamePage() {
+  const params = useParams() // Πιο σίγουρος τρόπος για να πάρουμε το ID
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [modalMode, setModalMode] = useState("rate")
+  const [game, setGame] = useState(null)
+  const [loading, setLoading] = useState(true)
 
-export default async function GamePage({ params }) {
-  const { id } = await params
-  const game = getGameById(id)
-
-  if (!game) {
-    notFound()
-  }
-
-  const mockReviews = [
-    {
-      id: 1,
-      author: "GamerPro2024",
-      rating: 9.5,
-      content: "Absolutely incredible experience! The world design is breathtaking and the gameplay loop keeps you hooked for hundreds of hours.",
-      likes: 234,
-      date: "2 days ago"
-    },
-    {
-      id: 2,
-      author: "CasualPlayer",
-      rating: 8.0,
-      content: "Great game overall, though the difficulty can be challenging for newcomers. The story and characters are memorable.",
-      likes: 156,
-      date: "1 week ago"
-    },
-    {
-      id: 3,
-      author: "RPGEnthusiast",
-      rating: 10,
-      content: "A masterpiece in every sense of the word. This game sets a new standard for the genre.",
-      likes: 512,
-      date: "2 weeks ago"
+  useEffect(() => {
+    if (params?.id) {
+      const foundGame = getGameById(params.id)
+      setGame(foundGame)
+      setLoading(false)
     }
-  ]
+  }, [params])
+
+  if (loading) return <div className="min-h-screen bg-background flex items-center justify-center text-blue-500 font-bold">LOADING...</div>
+  if (!game) notFound()
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Hero Section with Cover */}
-      <section className="relative">
-        <div className="absolute inset-0 h-80 overflow-hidden">
-          <Image
-            src={game.screenshots[0]}
-            alt={game.title}
-            fill
-            className="object-cover"
-            priority
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/80 to-background" />
-        </div>
-
-        <div className="container relative mx-auto px-4 pt-8">
-          <Link
-            href="/"
-            className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Games
+    <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
+      {/* Hero Section */}
+      <section className="relative h-[50vh] w-full overflow-hidden">
+        <Image
+          src={game.screenshots[0] || game.coverImage}
+          alt={game.title}
+          fill
+          className="object-cover opacity-30 blur-[1px]"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
+        <div className="container relative mx-auto px-4 pt-12 h-full flex flex-col justify-between pb-10">
+          <Link href="/" className="inline-flex items-center gap-2 text-sm font-bold text-muted-foreground hover:text-blue-500 transition-all">
+            <ArrowLeft className="h-4 w-4" /> BACK TO DISCOVER
           </Link>
-
-          <div className="flex flex-col gap-8 pb-8 md:flex-row">
-            {/* Cover Image */}
-            <div className="relative aspect-[3/4] w-full shrink-0 overflow-hidden rounded-xl shadow-2xl md:w-72">
-              <Image
-                src={game.coverImage}
-                alt={game.title}
-                fill
-                className="object-cover"
-                priority
-              />
+          <div className="flex flex-col md:flex-row gap-8 items-end">
+            <div className="relative aspect-[3/4] w-48 md:w-64 shrink-0 overflow-hidden rounded-2xl shadow-2xl border border-border hidden md:block">
+              <Image src={game.coverImage} alt={game.title} fill className="object-cover" />
             </div>
-
-            {/* Game Info */}
-            <div className="flex flex-1 flex-col justify-end">
-              <div className="mb-4 flex flex-wrap gap-2">
-                {game.genres.map((genre) => (
-                  <Badge key={genre} className="bg-primary/20 text-primary hover:bg-primary/30">
-                    {genre}
-                  </Badge>
-                ))}
-              </div>
-
-              <h1 className="mb-4 text-balance text-3xl font-bold text-foreground md:text-4xl lg:text-5xl">
-                {game.title}
-              </h1>
-
-              <p className="mb-6 text-pretty text-lg text-muted-foreground">
-                {game.description}
-              </p>
-
-              <div className="mb-6 flex flex-wrap items-center gap-6">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-                    <span className="text-2xl font-bold">{game.rating}</span>
-                  </div>
-                  <div>
-                    <RatingStars rating={game.rating} size="sm" />
-                    <p className="text-sm text-muted-foreground">
-                      {game.reviewCount.toLocaleString()} reviews
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Actions Section */}
-              <div className="flex flex-wrap gap-3">
-                <Button size="lg" className="gap-2">
-                  <Star className="h-5 w-5" />
-                  Rate This Game
-                </Button>
-                <Button size="lg" variant="secondary" className="gap-2">
-                  <MessageSquare className="h-5 w-5" />
-                  Write a Review
-                </Button>
-                {/* ΕΔΩ ΜΠΗΚΕ ΤΟ WISHLIST BUTTON */}
-                <WishlistButton gameId={game.id} size="lg" />
+            <div className="flex-1">
+              <h1 className="text-4xl md:text-7xl font-black mb-4 tracking-tighter leading-none">{game.title}</h1>
+              <div className="flex items-center gap-6">
+                <div className="bg-blue-600 px-4 py-1.5 rounded-xl font-black text-2xl text-white shadow-lg">{game.rating}</div>
+                <RatingStars rating={game.rating} size="sm" />
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Content Section */}
-      <section className="container mx-auto px-4 py-12">
-        <div className="grid gap-8 lg:grid-cols-3">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-8">
-            <Card className="border-border bg-card">
-              <CardHeader>
-                <CardTitle className="text-foreground">About</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground leading-relaxed">
-                  {game.longDescription}
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-border bg-card">
-              <CardHeader>
-                <CardTitle className="text-foreground">Screenshots</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
-                  {game.screenshots.map((screenshot, index) => (
-                    <div
-                      key={index}
-                      className="relative aspect-video overflow-hidden rounded-lg"
-                    >
-                      <Image
-                        src={screenshot}
-                        alt={`${game.title} screenshot ${index + 1}`}
-                        fill
-                        className="object-cover transition-transform hover:scale-105"
-                      />
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-border bg-card">
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="text-foreground">User Reviews</CardTitle>
-                <Button variant="outline" size="sm">
-                  View All
-                </Button>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {mockReviews.map((review) => (
-                  <div key={review.id} className="border-b border-border pb-6 last:border-0 last:pb-0">
-                    <div className="mb-3 flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-sm font-medium text-foreground">
-                          {review.author.slice(0, 2).toUpperCase()}
-                        </div>
-                        <div>
-                          <p className="font-medium text-foreground">{review.author}</p>
-                          <p className="text-sm text-muted-foreground">{review.date}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-1 text-primary">
-                        <Star className="h-4 w-4 fill-primary" />
-                        <span className="font-semibold">{review.rating}</span>
-                      </div>
-                    </div>
-                    <p className="mb-3 text-muted-foreground">{review.content}</p>
-                    <button className="flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground">
-                      <ThumbsUp className="h-4 w-4" />
-                      <span>{review.likes} found this helpful</span>
-                    </button>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
+      {/* Main Content */}
+      <main className="container mx-auto px-4 py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+          <div className="lg:col-span-2 space-y-12">
+            <div className="flex flex-wrap items-center gap-4 p-8 bg-card rounded-[2.5rem] border border-border backdrop-blur-md">
+              <Button onClick={() => { setModalMode("rate"); setIsModalOpen(true); }} className="h-14 px-10 bg-blue-600 hover:bg-blue-500 text-white font-black rounded-2xl uppercase">
+                <Star className="mr-2 h-5 w-5 fill-white" /> Rate
+              </Button>
+              <Button onClick={() => { setModalMode("review"); setIsModalOpen(true); }} variant="outline" className="h-14 px-10 border-border font-black rounded-2xl uppercase">
+                <MessageSquare className="mr-2 h-5 w-5 text-blue-500" /> Review
+              </Button>
+              <WishlistButton gameId={game.id} />
+            </div>
+            <div className="space-y-6">
+              <h2 className="text-3xl font-black flex items-center gap-3"><ShieldCheck className="text-blue-500 h-8 w-8" /> SUMMARY</h2>
+              <p className="text-muted-foreground text-xl leading-relaxed">{game.longDescription}</p>
+            </div>
           </div>
         </div>
-      </section>
+      </main>
+
+      <ReviewModal gameTitle={game.title} isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} mode={modalMode} />
     </div>
   )
 }

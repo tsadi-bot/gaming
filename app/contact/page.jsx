@@ -1,134 +1,146 @@
-"use client";
+"use client"
 
-import React, { useState } from 'react';
-import { Mail, MessageSquare, Twitter, Github, Send, AlertCircle, CheckCircle2, Copy, Check } from 'lucide-react';
+import { useState, useMemo } from "react"
+import { motion, AnimatePresence } from "framer-motion"
+import { Mail, Send, CheckCircle2, AlertCircle, PartyPopper, ArrowLeft } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import Link from "next/link"
 
-const ContactPage = () => {
-  const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' });
-  const [status, setStatus] = useState({ submitting: false, success: false, error: null });
-  const [copied, setCopied] = useState(false);
+export default function ContactPage() {
+  const [formData, setFormData] = useState({ name: "", email: "", message: "" })
+  const [isSubmitted, setIsSubmitted] = useState(false)
+  const [loading, setLoading] = useState(false)
 
-  const myEmail = "papandreouthodores7@gmail.com";
-
-  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
-
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(myEmail);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
+  // Validation Logic
+  const isEmailValid = useMemo(() => formData.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/), [formData.email]);
+  const isFormValid = useMemo(() => formData.name.trim().length >= 3 && isEmailValid && formData.message.trim().length >= 10, [formData, isEmailValid]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setStatus({ submitting: true, success: false, error: null });
-
-    try {
-      // Χρησιμοποιούμε το fetch με όλα τα απαραίτητα headers για να μην "χτυπάει"
-      const response = await fetch("https://formspree.io", {
-        method: "POST",
-        body: JSON.stringify(formData),
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        }
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setStatus({ submitting: false, success: true, error: null });
-        setFormData({ name: '', email: '', subject: '', message: '' });
-      } else {
-        throw new Error(data.error || "Κάτι πήγε στραβά. Δοκίμασε ξανά.");
-      }
-    } catch (err) {
-      // Αν το error είναι "Failed to fetch", εμφανίζουμε πιο κατανοητό μήνυμα
-      setStatus({ 
-        submitting: false, 
-        success: false, 
-        error: "Σφάλμα σύνδεσης. Βεβαιώσου ότι το Formspree ID είναι σωστό." 
-      });
-    }
+    setLoading(true);
+    // Προσομοίωση αποστολής (delay 1.5s)
+    setTimeout(() => {
+      setLoading(false);
+      setIsSubmitted(true);
+    }, 1500);
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white transition-colors duration-300 font-sans relative overflow-hidden">
+    <div className="relative min-h-screen w-full flex items-center justify-center py-20 px-4 overflow-hidden">
       
-      {/* Background Glows */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none opacity-40">
-        <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-purple-900/30 blur-[120px] rounded-full"></div>
-        <div className="absolute top-[20%] -right-[10%] w-[30%] h-[30%] bg-blue-900/20 blur-[120px] rounded-full"></div>
-      </div>
+      {/* BACKGROUND IMAGE ANIMATION */}
+      <motion.div 
+        initial={{ scale: 1.1, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 1.5 }}
+        className="absolute inset-0 z-0 bg-cover bg-center"
+        style={{ backgroundImage: `url('https://unsplash.com')` }}
+      >
+        <div className="absolute inset-0 bg-black/85 backdrop-blur-[4px]" />
+      </motion.div>
 
-      <div className="relative z-10 max-w-6xl mx-auto px-6 py-20">
-        <div className="text-center mb-16">
-          <h1 className="text-5xl md:text-6xl font-extrabold mb-4 bg-gradient-to-r from-white to-gray-500 bg-clip-text text-transparent italic tracking-tighter">
-            Get in Touch
-          </h1>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-          
-          {/* Form Side */}
-          <div className="lg:col-span-7 bg-[#111111]/80 backdrop-blur-xl border border-white/5 p-8 rounded-3xl shadow-2xl">
-            {status.success ? (
-              <div className="py-20 text-center animate-in fade-in zoom-in duration-500">
-                <CheckCircle2 className="text-green-400 mx-auto mb-6" size={60} />
-                <h2 className="text-3xl font-bold mb-2">Sent Successfully!</h2>
-                <button onClick={() => setStatus({ ...status, success: false })} className="text-purple-400 font-bold hover:underline mt-4">Send New Message</button>
-              </div>
-            ) : (
-              <>
-                <div className="flex items-center gap-3 mb-8 text-xl font-bold tracking-tight uppercase italic">
-                  <MessageSquare className="text-purple-500" size={24} />
-                  <h2>Send a Message</h2>
+      <div className="container relative z-10 mx-auto max-w-6xl">
+        <AnimatePresence mode="wait">
+          {!isSubmitted ? (
+            <motion.div 
+              key="form"
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -20, opacity: 0 }}
+              className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center"
+            >
+              {/* LEFT SIDE: TITLES */}
+              <div className="space-y-8 text-center lg:text-left">
+                <motion.h1 
+                  initial={{ x: -50 }} animate={{ x: 0 }}
+                  className="text-6xl md:text-8xl font-black text-white tracking-tighter uppercase leading-none"
+                >
+                  Contact <span className="text-blue-500">Us</span>
+                </motion.h1>
+                <div className="space-y-4">
+                  {['Name (min 3 chars)', 'Valid Email Address', 'Message (min 10 chars)'].map((text, i) => (
+                    <motion.p 
+                      key={i} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 * i }}
+                      className="flex items-center gap-3 justify-center lg:justify-start text-zinc-400 text-lg"
+                    >
+                      <CheckCircle2 className={(i===0 && formData.name.length >= 3) || (i===1 && isEmailValid) || (i===2 && formData.message.length >= 10) ? "text-green-500" : "text-zinc-700"} size={22} />
+                      {text}
+                    </motion.p>
+                  ))}
                 </div>
-                
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <input name="name" required value={formData.name} onChange={handleChange} placeholder="NAME" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 outline-none focus:border-purple-500 transition-all font-bold text-sm" />
-                    <input name="email" type="email" required value={formData.email} onChange={handleChange} placeholder="EMAIL" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 outline-none focus:border-purple-500 transition-all font-bold text-sm" />
+              </div>
+
+              {/* RIGHT SIDE: FORM CARD */}
+              <motion.div 
+                whileHover={{ y: -5 }}
+                className="bg-zinc-900/60 backdrop-blur-2xl border border-white/10 p-10 rounded-[3rem] shadow-2xl"
+              >
+                <form className="space-y-6" onSubmit={handleSubmit}>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-2">Your Name</label>
+                    <input 
+                      name="name" type="text" placeholder="Enter your name" 
+                      className="w-full h-16 bg-white/5 border border-white/10 rounded-2xl px-6 text-white outline-none focus:border-blue-500 transition-all"
+                      onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    />
                   </div>
-                  <input name="subject" required value={formData.subject} onChange={handleChange} placeholder="SUBJECT" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 outline-none focus:border-purple-500 transition-all font-bold text-sm" />
-                  <textarea name="message" rows="5" required value={formData.message} onChange={handleChange} placeholder="MESSAGE..." className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 outline-none focus:border-purple-500 transition-all font-bold resize-none text-sm"></textarea>
 
-                  {status.error && (
-                    <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-4 rounded-xl flex items-center gap-2 text-xs font-bold uppercase italic">
-                      <AlertCircle size={16} /> {status.error}
-                    </div>
-                  )}
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-2">Email Address</label>
+                    <input 
+                      name="email" type="email" placeholder="name@domain.com" 
+                      className="w-full h-16 bg-white/5 border border-white/10 rounded-2xl px-6 text-white outline-none focus:border-blue-500 transition-all"
+                      onChange={(e) => setFormData({...formData, email: e.target.value})}
+                    />
+                  </div>
 
-                  <button type="submit" disabled={status.submitting} className="w-full bg-white text-black font-black py-5 rounded-xl hover:bg-purple-600 hover:text-white transition-all transform active:scale-95 shadow-xl text-xl italic tracking-tighter uppercase">
-                    {status.submitting ? "Sending..." : "Send Message"}
-                  </button>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-2">Message</label>
+                    <textarea 
+                      name="message" rows="4" placeholder="How can we help you?" 
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl p-6 text-white outline-none focus:border-blue-500 transition-all resize-none"
+                      onChange={(e) => setFormData({...formData, message: e.target.value})}
+                    ></textarea>
+                  </div>
+
+                  <Button 
+                    disabled={!isFormValid || loading}
+                    className={`w-full h-16 font-black text-lg uppercase tracking-widest rounded-2xl transition-all gap-3 ${isFormValid ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-xl shadow-blue-600/20' : 'bg-zinc-800 text-zinc-500 opacity-50'}`}
+                  >
+                    {loading ? <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> : (isFormValid ? <Send size={20} /> : <AlertCircle size={20} />)}
+                    {loading ? "Sending..." : (isFormValid ? "Send Message" : "Locked")}
+                  </Button>
                 </form>
-              </>
-            )}
-          </div>
-
-          {/* Info Side */}
-          <div className="lg:col-span-5 space-y-8">
-            <div className="bg-[#111111]/80 backdrop-blur-xl border border-white/5 p-8 rounded-3xl shadow-xl">
-              <div className="flex items-center gap-3 mb-8 text-xl font-bold tracking-tight uppercase italic">
-                <Mail className="text-blue-500" size={24} />
-                <h2>Direct Contact</h2>
+              </motion.div>
+            </motion.div>
+          ) : (
+            /* SUCCESS MESSAGE CARD */
+            <motion.div 
+              key="success"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="max-w-md mx-auto text-center space-y-8 bg-blue-600 p-12 rounded-[3.5rem] shadow-[0_20px_80px_rgba(37,99,235,0.4)]"
+            >
+              <motion.div 
+                animate={{ rotate: [0, 10, -10, 0], scale: [1, 1.2, 1] }} 
+                transition={{ repeat: Infinity, duration: 2 }}
+                className="w-24 h-24 bg-white rounded-full flex items-center justify-center mx-auto shadow-2xl"
+              >
+                <PartyPopper className="text-blue-600 w-12 h-12" />
+              </motion.div>
+              <div className="space-y-4">
+                <h2 className="text-4xl font-black uppercase text-white tracking-tighter italic">Message Sent!</h2>
+                <p className="text-blue-100 font-medium">Thanks for reaching out, <span className="font-black underline">{formData.name}</span>. Our team will get back to you within 24 hours.</p>
               </div>
-              <div className="bg-white/5 p-5 rounded-2xl border border-white/5 flex items-center justify-between group">
-                <div className="overflow-hidden">
-                  <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1 italic">Email</p>
-                  <p className="text-lg font-bold truncate italic">{myEmail}</p>
-                </div>
-                <button onClick={copyToClipboard} className="p-3 bg-white/10 rounded-xl hover:bg-white hover:text-black transition-all">
-                  {copied ? <Check size={20} /> : <Copy size={20} />}
-                </button>
-              </div>
-            </div>
-          </div>
-
-        </div>
+              <Link href="/">
+                <Button variant="outline" className="mt-4 w-full h-14 rounded-2xl bg-white text-blue-600 border-none font-black hover:bg-zinc-100 transition-all uppercase tracking-widest gap-2">
+                  <ArrowLeft size={18} /> Back to Home
+                </Button>
+              </Link>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
-  );
-};
-
-export default ContactPage;
+  )
+}
