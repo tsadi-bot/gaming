@@ -3,10 +3,11 @@
 import { Star, ArrowRight } from "lucide-react";
 import Link from "next/link"; // Εισαγωγή του Link
 
+
 export default function GameCard({ game }) {
   return (
     // Τυλίγουμε όλη την κάρτα με Link για να είναι clickable παντού
-    <Link href={`/game/${game.id}`} className="group block h-full">
+    <Link href={`/game/${game.slug}`} className="group block h-full">
       <div className="relative bg-[#111] rounded-2xl overflow-hidden border border-white/5 group-hover:border-blue-500/40 group-hover:shadow-[0_10px_40px_-15px_rgba(59,130,246,0.3)] transition-all duration-500 flex flex-col h-full">
         
         {/* Image Container */}

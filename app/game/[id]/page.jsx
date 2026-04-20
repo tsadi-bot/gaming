@@ -1,60 +1,92 @@
-"use client"
 
-import { useState, useEffect } from "react"
-import { notFound, useParams } from "next/navigation" // Πρόσθεσα το useParams
+
+import { notFound } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
 import { RatingStars } from "@/components/rating-stars"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card, CardTitle } from "@/components/ui/card"
 import { getGameById } from "@/lib/games"
 import { WishlistButton } from "@/components/wishlist-button"
 import ReviewModal from "@/components/review-modal" 
-import { ArrowLeft, Star, MessageSquare, Calendar, ShieldCheck, Monitor } from "lucide-react"
+import { ArrowLeft, Star, MessageSquare, ShieldCheck } from "lucide-react"
 
-export default function GamePage() {
-  const params = useParams() // Πιο σίγουρος τρόπος για να πάρουμε το ID
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [modalMode, setModalMode] = useState("rate")
-  const [game, setGame] = useState(null)
-  const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    if (params?.id) {
-      const foundGame = getGameById(params.id)
-      setGame(foundGame)
-      setLoading(false)
-    }
-  }, [params])
+const GamePage = async ({ params }) => {
 
-  if (loading) return <div className="min-h-screen bg-background flex items-center justify-center text-blue-500 font-bold">LOADING...</div>
-  if (!game) notFound()
+    const { id } = await params
+    console.log("Received ID:", id) // Debugging log
+
+    const game = await getGameById(id)
+    console.log("Fetched game:", game) // Debugging log
+
+//   const params = useParams()
+//   const [isModalOpen, setIsModalOpen] = useState(false)
+//   const [modalMode, setModalMode] = useState("rate")
+//   const [game, setGame] = useState(null)
+//   const [loading, setLoading] = useState(true)
+
+//   useEffect(() => {
+//     // Περιμένουμε να υπάρχουν τα params πριν ψάξουμε
+//     if (params?.id) {
+//       const foundGame = getGameById(params.id)
+//       setGame(foundGame)
+//       setLoading(false)
+//     }
+//   }, [params])
+
+//   // 1. Εμφάνιση loading μέχρι να βρεθεί το παιχνίδι
+//   if (loading) {
+//     return (
+//       <div className="min-h-screen bg-[#050505] flex items-center justify-center">
+//         <div className="text-blue-500 font-black text-2xl animate-pulse tracking-tighter">
+//           LOADING GAME...
+//         </div>
+//       </div>
+//     )
+//   }
+
+  // 2. ΜΟΝΟ αν τελειώσει το loading και δεν υπάρχει game, τότε βγάζει 404
+  if (!game) {
+    return notFound()
+  }
 
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
       {/* Hero Section */}
-      <section className="relative h-[50vh] w-full overflow-hidden">
+      <section className="relative h-[60vh] w-full overflow-hidden">
         <Image
-          src={game.screenshots[0] || game.coverImage}
+          src={game.screenshots?.[0] || game.coverImage}
           alt={game.title}
           fill
-          className="object-cover opacity-30 blur-[1px]"
+          className="object-cover opacity-30 blur-[2px]"
           priority
         />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
+        
         <div className="container relative mx-auto px-4 pt-12 h-full flex flex-col justify-between pb-10">
-          <Link href="/" className="inline-flex items-center gap-2 text-sm font-bold text-muted-foreground hover:text-blue-500 transition-all">
-            <ArrowLeft className="h-4 w-4" /> BACK TO DISCOVER
+          <Link href="/" className="inline-flex items-center gap-2 text-sm font-bold text-zinc-400 hover:text-blue-500 transition-all uppercase tracking-widest">
+            <ArrowLeft className="h-4 w-4" /> Back to Discover
           </Link>
+
           <div className="flex flex-col md:flex-row gap-8 items-end">
-            <div className="relative aspect-[3/4] w-48 md:w-64 shrink-0 overflow-hidden rounded-2xl shadow-2xl border border-border hidden md:block">
+            <div className="relative aspect-[3/4] w-48 md:w-64 shrink-0 overflow-hidden rounded-2xl shadow-2xl border border-white/10 hidden md:block">
               <Image src={game.coverImage} alt={game.title} fill className="object-cover" />
             </div>
             <div className="flex-1">
-              <h1 className="text-4xl md:text-7xl font-black mb-4 tracking-tighter leading-none">{game.title}</h1>
+              <div className="flex flex-wrap gap-2 mb-4">
+                {game.genres?.map((genre, i) => (
+                  <span key={i} className="text-[10px] font-black uppercase tracking-widest bg-blue-500/10 text-blue-500 px-3 py-1 rounded-full border border-blue-500/20">
+                    {genre}
+                  </span>
+                ))}
+              </div>
+              <h1 className="text-4xl md:text-7xl font-black mb-4 tracking-tighter leading-none text-white">
+                {game.title}
+              </h1>
               <div className="flex items-center gap-6">
-                <div className="bg-blue-600 px-4 py-1.5 rounded-xl font-black text-2xl text-white shadow-lg">{game.rating}</div>
+                <div className="bg-blue-600 px-4 py-1.5 rounded-xl font-black text-2xl text-white shadow-lg shadow-blue-600/20">
+                  {game.rating}
+                </div>
                 <RatingStars rating={game.rating} size="sm" />
               </div>
             </div>
@@ -66,24 +98,80 @@ export default function GamePage() {
       <main className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
           <div className="lg:col-span-2 space-y-12">
-            <div className="flex flex-wrap items-center gap-4 p-8 bg-card rounded-[2.5rem] border border-border backdrop-blur-md">
-              <Button onClick={() => { setModalMode("rate"); setIsModalOpen(true); }} className="h-14 px-10 bg-blue-600 hover:bg-blue-500 text-white font-black rounded-2xl uppercase">
-                <Star className="mr-2 h-5 w-5 fill-white" /> Rate
+            {/* Action Bar */}
+            <div className="flex flex-wrap items-center gap-4 p-6 bg-zinc-900/50 rounded-[2rem] border border-white/5 backdrop-blur-md">
+              <Button 
+                // onClick={() => { setModalMode("rate"); setIsModalOpen(true); }} 
+                className="h-14 px-8 bg-blue-600 hover:bg-blue-500 text-white font-black rounded-xl uppercase tracking-wider"
+              >
+                <Star className="mr-2 h-5 w-5 fill-white" /> Rate Game
               </Button>
-              <Button onClick={() => { setModalMode("review"); setIsModalOpen(true); }} variant="outline" className="h-14 px-10 border-border font-black rounded-2xl uppercase">
-                <MessageSquare className="mr-2 h-5 w-5 text-blue-500" /> Review
+              <Button 
+                // onClick={() => { setModalMode("review"); setIsModalOpen(true); }} 
+                variant="outline" 
+                className="h-14 px-8 border-white/10 hover:bg-white/5 font-black rounded-xl uppercase tracking-wider"
+              >
+                <MessageSquare className="mr-2 h-5 w-5 text-blue-500" /> Write Review
               </Button>
               <WishlistButton gameId={game.id} />
             </div>
+
+            {/* Summary */}
             <div className="space-y-6">
-              <h2 className="text-3xl font-black flex items-center gap-3"><ShieldCheck className="text-blue-500 h-8 w-8" /> SUMMARY</h2>
-              <p className="text-muted-foreground text-xl leading-relaxed">{game.longDescription}</p>
+              <h2 className="text-2xl font-black flex items-center gap-3 text-white uppercase tracking-tighter">
+                <ShieldCheck className="text-blue-500 h-7 w-7" /> Summary
+              </h2>
+              <p className="text-zinc-400 text-lg leading-relaxed font-medium">
+                {game.longDescription}
+              </p>
             </div>
+          </div>
+
+          {/* Sidebar Info */}
+          <div className="space-y-8 bg-zinc-900/30 p-8 rounded-[2rem] border border-white/5 h-fit">
+             <div>
+                <h4 className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] mb-2">Developer</h4>
+                <p className="text-white font-bold">{game.developer}</p>
+             </div>
+             <div>
+                <h4 className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] mb-2">Release Date</h4>
+                <p className="text-white font-bold">{game.releaseDate}</p>
+             </div>
+             <div>
+                <h4 className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] mb-2">Platforms</h4>
+                <div className="flex flex-wrap gap-2 mt-1">
+                  {game.platforms?.map((p, i) => (
+                    <span key={i} className="text-xs font-bold text-zinc-300">{p}{i !== game.platforms.length - 1 ? "," : ""}</span>
+                  ))}
+                </div>
+             </div>
           </div>
         </div>
       </main>
 
-      <ReviewModal gameTitle={game.title} isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} mode={modalMode} />
+      {/* <ReviewModal 
+        gameTitle={game.title} 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        mode={modalMode} 
+      /> */}
     </div>
   )
 }
+
+export default GamePage
+
+// const GamePage = async ({ params }) => {
+
+//     const { id } = await params
+
+//     return (
+//         <div className="min-h-screen bg-[#050505] flex items-center justify-center">
+//             <div className="text-blue-500 font-black text-2xl animate-pulse tracking-tighter">
+//                 Show game details for: id = {id}
+//             </div>
+//         </div>
+//     )
+// }
+
+// export default GamePage
