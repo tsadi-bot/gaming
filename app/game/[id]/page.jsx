@@ -1,73 +1,21 @@
 
 
-"use client"
-
-import { useState, useEffect } from "react"
 import { notFound } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
 import { RatingStars } from "@/components/rating-stars"
-import { Button } from "@/components/ui/button"
 import { getGameById } from "@/lib/games"
-import { WishlistButton } from "@/components/wishlist-button"
-import ReviewModal from "@/components/review-modal" 
-import { ArrowLeft, Star, MessageSquare, ShieldCheck } from "lucide-react"
+import GameInteractiveContent from "@/components/game-interactive-content"
+import { ArrowLeft } from "lucide-react"
 
+const GamePage = async ({ params }) => {
+  const { id } = await params
 
-const GamePage = ({ params: paramsPromise }) => {
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [modalMode, setModalMode] = useState("rate")
-  const [game, setGame] = useState(null)
-  const [reviews, setReviews] = useState([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    async function loadGame() {
-      try {
-        const resolvedParams = await paramsPromise
-        if (resolvedParams?.id) {
-          const foundGame = getGameById(resolvedParams.id)
-          setGame(foundGame)
-          // Load reviews from localStorage
-          const savedReviews = localStorage.getItem(`reviews-${resolvedParams.id}`)
-          if (savedReviews) {
-            setReviews(JSON.parse(savedReviews))
-          }
-        }
-      } catch (error) {
-        console.error("Error loading game:", error)
-      } finally {
-        setLoading(false)
-      }
-    }
-    loadGame()
-  }, [paramsPromise])
-
-  const handleAddReview = (reviewData) => {
-    const newReview = {
-      id: Date.now(),
-      name: reviewData.name,
-      text: reviewData.text,
-      rating: reviewData.rating || 5,
-      date: new Date().toLocaleDateString()
-    }
-    const updatedReviews = [newReview, ...reviews]
-    setReviews(updatedReviews)
-    // Save to localStorage
-    if (game) {
-      localStorage.setItem(`reviews-${game.id}`, JSON.stringify(updatedReviews))
-    }
+  if (!id) {
+    return notFound()
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-blue-500 font-black text-2xl animate-pulse tracking-tighter">
-          LOADING GAME...
-        </div>
-      </div>
-    )
-  }
+  const game = getGameById(id)
 
   if (!game) {
     return notFound()
@@ -120,69 +68,9 @@ const GamePage = ({ params: paramsPromise }) => {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-          <div className="lg:col-span-2 space-y-12">
-            {/* Action Bar */}
-            <div className="flex flex-wrap items-center gap-4 p-6 bg-zinc-900/50 rounded-[2rem] border border-white/5 backdrop-blur-md">
-              <Button 
-                onClick={() => { setModalMode("rate"); setIsModalOpen(true); }} 
-                className="h-14 px-8 bg-blue-600 hover:bg-blue-500 text-white font-black rounded-xl uppercase tracking-wider"
-              >
-                <Star className="mr-2 h-5 w-5 fill-white" /> Rate Game
-              </Button>
-              <Button 
-                onClick={() => { setModalMode("review"); setIsModalOpen(true); }} 
-                variant="outline" 
-                className="h-14 px-8 border-white/10 hover:bg-white/5 font-black rounded-xl uppercase tracking-wider"
-              >
-                <MessageSquare className="mr-2 h-5 w-5 text-blue-500" /> Write Review
-              </Button>
-              <WishlistButton gameId={game.id} />
-            </div>
-
-            {/* Summary */}
-            <div className="space-y-6">
-              <h2 className="text-2xl font-black flex items-center gap-3 text-white uppercase tracking-tighter">
-                <ShieldCheck className="text-blue-500 h-7 w-7" /> Summary
-              </h2>
-              <p className="text-zinc-400 text-lg leading-relaxed font-medium">
-                {game.longDescription}
-              </p>
-            </div>
-
-            {/* Reviews Section */}
-            <div className="space-y-6">
-              <h2 className="text-2xl font-black flex items-center gap-3 text-white uppercase tracking-tighter">
-                <MessageSquare className="text-blue-500 h-7 w-7" /> User Reviews ({reviews.length})
-              </h2>
-              
-              {reviews.length === 0 ? (
-                <div className="p-8 bg-zinc-900/30 rounded-2xl border border-white/5 text-center">
-                  <p className="text-zinc-400 font-medium">No reviews yet. Be the first to share your thoughts!</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {reviews.map((review) => (
-                    <div key={review.id} className="p-6 bg-zinc-900/30 rounded-2xl border border-white/5 space-y-3">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h3 className="font-black text-white text-lg">{review.name}</h3>
-                          <p className="text-xs text-zinc-500 uppercase tracking-widest">{review.date}</p>
-                        </div>
-                        <div className="flex gap-1">
-                          {[...Array(5)].map((_, i) => (
-                            <Star
-                              key={i}
-                              className={`h-4 w-4 ${i < review.rating ? 'fill-blue-500 text-blue-500' : 'text-zinc-600'}`}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                      <p className="text-zinc-300 text-sm leading-relaxed">{review.text}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+          <div className="lg:col-span-2">
+            {/* Interactive Content - Client Component */}
+            <GameInteractiveContent game={game} />
           </div>
 
           {/* Sidebar Info */}
@@ -207,13 +95,7 @@ const GamePage = ({ params: paramsPromise }) => {
         </div>
       </main>
 
-      <ReviewModal 
-        gameTitle={game.title} 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-        mode={modalMode}
-        onReviewSubmit={handleAddReview}
-      />
+
     </div>
   )
 }
