@@ -2,11 +2,14 @@
 
 import { useState, useRef, useEffect } from "react"
 import { Star } from "lucide-react"
+import { useGameDataContext } from "@/lib/GameContext"
 
-export default function RateGameButton({ onRate, userRating }) {
+export default function RateGameButton({ onRate, gameId }) {
+  const { getGameRating, setGameRating } = useGameDataContext()
   const [isOpen, setIsOpen] = useState(false)
   const [hoverRating, setHoverRating] = useState(0)
   const menuRef = useRef(null)
+  const userRating = getGameRating(gameId)
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -20,10 +23,9 @@ export default function RateGameButton({ onRate, userRating }) {
   }, [])
 
   const handleRating = (rating) => {
-    onRate(rating)
+    setGameRating(gameId, rating)
+    onRate?.(rating)
     setIsOpen(false)
-    // Emit custom event to update rating display
-    window.dispatchEvent(new CustomEvent("gameRatingUpdated", { detail: { rating } }))
   }
 
   const stars = [2, 4, 6, 8, 10]

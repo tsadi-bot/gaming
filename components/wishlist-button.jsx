@@ -2,9 +2,10 @@
 
 import { useState, useRef, useEffect } from "react"
 import { Heart } from "lucide-react"
+import { useGameDataContext } from "@/lib/GameContext"
 
 export function WishlistButton({ gameId }) {
-  const [isWishlisted, setIsWishlisted] = useState(false)
+  const { isWishlisted, addToWishlist, removeFromWishlist } = useGameDataContext()
   const [isOpen, setIsOpen] = useState(false)
   const menuRef = useRef(null)
 
@@ -21,13 +22,11 @@ export function WishlistButton({ gameId }) {
 
   const handleWishlistToggle = (action) => {
     if (action === "add") {
-      setIsWishlisted(true)
+      addToWishlist(gameId)
     } else {
-      setIsWishlisted(false)
+      removeFromWishlist(gameId)
     }
     setIsOpen(false)
-    // Emit custom event to update UI if needed
-    window.dispatchEvent(new CustomEvent("wishlistUpdated", { detail: { isWishlisted: action === "add" } }))
   }
 
   return (
@@ -36,7 +35,7 @@ export function WishlistButton({ gameId }) {
         onClick={() => setIsOpen(!isOpen)}
         className={`
           h-14 px-8 rounded-xl font-black uppercase tracking-wider flex items-center gap-2 transition-all border-2
-          ${isWishlisted 
+          ${isWishlisted(gameId)
             ? "bg-red-600 border-red-600 text-white shadow-lg shadow-red-600/20 hover:bg-red-500" 
             : "bg-zinc-800/40 border-zinc-700 text-zinc-400 hover:border-red-500/50 hover:text-red-500"
           }
@@ -44,10 +43,10 @@ export function WishlistButton({ gameId }) {
       >
         <Heart 
           className={`h-5 w-5 transition-all duration-300 ${
-            isWishlisted ? "fill-white" : "fill-transparent"
+            isWishlisted(gameId) ? "fill-white" : "fill-transparent"
           }`} 
         />
-        {isWishlisted ? "Wishlisted" : "Wishlist"}
+        {isWishlisted(gameId) ? "Wishlisted" : "Wishlist"}
       </button>
 
       {isOpen && (
