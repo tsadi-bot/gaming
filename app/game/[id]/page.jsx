@@ -6,6 +6,7 @@ import Link from "next/link"
 import { RatingStars } from "@/components/rating-stars"
 import { getGameById } from "@/lib/games"
 import GameInteractiveContent from "@/components/game-interactive-content"
+import RateGameWrapper from "@/components/rate-game-wrapper"
 import { ArrowLeft } from "lucide-react"
 
 const GamePage = async ({ params }) => {
@@ -54,12 +55,13 @@ const GamePage = async ({ params }) => {
               <h1 className="text-4xl md:text-7xl font-black mb-4 tracking-tighter leading-none text-white">
                 {game.title}
               </h1>
-              <div className="flex items-center gap-6">
+              <div className="flex items-center gap-6 mb-6">
                 <div className="bg-blue-600 px-4 py-1.5 rounded-xl font-black text-2xl text-white shadow-lg shadow-blue-600/20">
                   {game.rating}
                 </div>
                 <RatingStars rating={game.rating} size="sm" />
               </div>
+              <RateGameWrapper gameId={game.id} />
             </div>
           </div>
         </div>
