@@ -4,48 +4,19 @@ import { notFound } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
 import { RatingStars } from "@/components/rating-stars"
-import { Button } from "@/components/ui/button"
 import { getGameById } from "@/lib/games"
-import { WishlistButton } from "@/components/wishlist-button"
-import ReviewModal from "@/components/review-modal" 
-import { ArrowLeft, Star, MessageSquare, ShieldCheck } from "lucide-react"
-
+import GameInteractiveContent from "@/components/game-interactive-content"
+import { ArrowLeft } from "lucide-react"
 
 const GamePage = async ({ params }) => {
+  const { id } = await params
 
-    const { id } = await params
-    console.log("Received ID:", id) // Debugging log
+  if (!id) {
+    return notFound()
+  }
 
-    const game = await getGameById(id)
-    console.log("Fetched game:", game) // Debugging log
+  const game = getGameById(id)
 
-//   const params = useParams()
-//   const [isModalOpen, setIsModalOpen] = useState(false)
-//   const [modalMode, setModalMode] = useState("rate")
-//   const [game, setGame] = useState(null)
-//   const [loading, setLoading] = useState(true)
-
-//   useEffect(() => {
-//     // Περιμένουμε να υπάρχουν τα params πριν ψάξουμε
-//     if (params?.id) {
-//       const foundGame = getGameById(params.id)
-//       setGame(foundGame)
-//       setLoading(false)
-//     }
-//   }, [params])
-
-//   // 1. Εμφάνιση loading μέχρι να βρεθεί το παιχνίδι
-//   if (loading) {
-//     return (
-//       <div className="min-h-screen bg-[#050505] flex items-center justify-center">
-//         <div className="text-blue-500 font-black text-2xl animate-pulse tracking-tighter">
-//           LOADING GAME...
-//         </div>
-//       </div>
-//     )
-//   }
-
-  // 2. ΜΟΝΟ αν τελειώσει το loading και δεν υπάρχει game, τότε βγάζει 404
   if (!game) {
     return notFound()
   }
@@ -97,34 +68,9 @@ const GamePage = async ({ params }) => {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-          <div className="lg:col-span-2 space-y-12">
-            {/* Action Bar */}
-            <div className="flex flex-wrap items-center gap-4 p-6 bg-zinc-900/50 rounded-[2rem] border border-white/5 backdrop-blur-md">
-              <Button 
-                // onClick={() => { setModalMode("rate"); setIsModalOpen(true); }} 
-                className="h-14 px-8 bg-blue-600 hover:bg-blue-500 text-white font-black rounded-xl uppercase tracking-wider"
-              >
-                <Star className="mr-2 h-5 w-5 fill-white" /> Rate Game
-              </Button>
-              <Button 
-                // onClick={() => { setModalMode("review"); setIsModalOpen(true); }} 
-                variant="outline" 
-                className="h-14 px-8 border-white/10 hover:bg-white/5 font-black rounded-xl uppercase tracking-wider"
-              >
-                <MessageSquare className="mr-2 h-5 w-5 text-blue-500" /> Write Review
-              </Button>
-              <WishlistButton gameId={game.id} />
-            </div>
-
-            {/* Summary */}
-            <div className="space-y-6">
-              <h2 className="text-2xl font-black flex items-center gap-3 text-white uppercase tracking-tighter">
-                <ShieldCheck className="text-blue-500 h-7 w-7" /> Summary
-              </h2>
-              <p className="text-zinc-400 text-lg leading-relaxed font-medium">
-                {game.longDescription}
-              </p>
-            </div>
+          <div className="lg:col-span-2">
+            {/* Interactive Content - Client Component */}
+            <GameInteractiveContent game={game} />
           </div>
 
           {/* Sidebar Info */}
@@ -149,12 +95,7 @@ const GamePage = async ({ params }) => {
         </div>
       </main>
 
-      {/* <ReviewModal 
-        gameTitle={game.title} 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-        mode={modalMode} 
-      /> */}
+
     </div>
   )
 }
