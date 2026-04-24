@@ -10,7 +10,6 @@ import { MessageSquare } from "lucide-react"
 export default function GameActionBar({ gameId, gameTitle, onReviewAdd, onRatingChange }) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [modalMode, setModalMode] = useState("rate")
-  const [userRating, setUserRating] = useState(0)
 
   const handleReviewSubmit = (reviewData) => {
     onReviewAdd(reviewData)
@@ -18,7 +17,6 @@ export default function GameActionBar({ gameId, gameTitle, onReviewAdd, onRating
   }
 
   const handleRate = (rating) => {
-    setUserRating(rating)
     onRatingChange?.(rating)
   }
 
@@ -27,7 +25,7 @@ export default function GameActionBar({ gameId, gameTitle, onReviewAdd, onRating
       <div className="flex flex-wrap items-center gap-4 p-6 bg-zinc-900/50 rounded-[2rem] border border-white/5 backdrop-blur-md">
         <RateGameButton 
           onRate={handleRate}
-          userRating={userRating}
+          gameId={gameId}
         />
         <Button 
           onClick={() => { setModalMode("review"); setIsModalOpen(true); }} 
