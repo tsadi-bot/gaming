@@ -4,26 +4,31 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { WishlistButton } from "@/components/wishlist-button"
 import ReviewModal from "@/components/review-modal"
-import { Star, MessageSquare } from "lucide-react"
+import RateGameButton from "@/components/rate-game-button"
+import { MessageSquare } from "lucide-react"
 
-export default function GameActionBar({ gameId, gameTitle, onReviewAdd }) {
+export default function GameActionBar({ gameId, gameTitle, onReviewAdd, onRatingChange }) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [modalMode, setModalMode] = useState("rate")
+  const [userRating, setUserRating] = useState(0)
 
   const handleReviewSubmit = (reviewData) => {
     onReviewAdd(reviewData)
     setIsModalOpen(false)
   }
 
+  const handleRate = (rating) => {
+    setUserRating(rating)
+    onRatingChange?.(rating)
+  }
+
   return (
     <>
       <div className="flex flex-wrap items-center gap-4 p-6 bg-zinc-900/50 rounded-[2rem] border border-white/5 backdrop-blur-md">
-        <Button 
-          onClick={() => { setModalMode("rate"); setIsModalOpen(true); }} 
-          className="h-14 px-8 bg-blue-600 hover:bg-blue-500 text-white font-black rounded-xl uppercase tracking-wider"
-        >
-          <Star className="mr-2 h-5 w-5 fill-white" /> Rate Game
-        </Button>
+        <RateGameButton 
+          onRate={handleRate}
+          userRating={userRating}
+        />
         <Button 
           onClick={() => { setModalMode("review"); setIsModalOpen(true); }} 
           variant="outline" 

@@ -1,63 +1,69 @@
 "use client"
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
+import { useState, useRef, useEffect } from "react"
 import { Star } from "lucide-react"
 
-export function RateGameButton({ gameId, onRatingSubmit }) {
-  const [isRated, setIsRated] = useState(false)
-  const [userRating, setUserRating] = useState(0)
+export default function RateGameButton({ onRate, userRating }) {
+  const [isOpen, setIsOpen] = useState(false)
   const [hoverRating, setHoverRating] = useState(0)
+  const menuRef = useRef(null)
 
-  const handleRatingSubmit = (rating) => {
-    setUserRating(rating)
-    setIsRated(true)
-    onRatingSubmit?.(rating)
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setIsOpen(false)
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
+
+  const handleRating = (rating) => {
+    onRate(rating)
+    setIsOpen(false)
+    // Emit custom event to update rating display
+    window.dispatchEvent(new CustomEvent("gameRatingUpdated", { detail: { rating } }))
   }
 
-  return (
-    <div className="flex flex-col items-center gap-4 p-6 bg-zinc-900/30 rounded-2xl border border-white/5">
-      <Button
-        onClick={() => setHoverRating(hoverRating > 0 ? hoverRating : 0)}
-        className={`
-          h-14 px-10 rounded-2xl font-black uppercase tracking-widest transition-all duration-300 active:scale-95 border-2
-          ${isRated 
-            ? "bg-blue-600 border-blue-600 text-white shadow-[0_0_20px_rgba(37,99,235,0.4)]" 
-            : "bg-zinc-800/40 border-zinc-700 text-zinc-400 hover:border-blue-500/50 hover:text-blue-500"
-          }
-        `}
-      >
-        <Star 
-          className={`mr-2 h-5 w-5 transition-all duration-300 ${
-            isRated ? "fill-white scale-110" : "fill-transparent"
-          }`} 
-        />
-        {isRated ? `Rated: ${userRating}/10` : "Rate Game"}
-      </Button>
+  const stars = [2, 4, 6, 8, 10]
+  const displayRating = hoverRating || userRating || 0
 
-      {!isRated && (
-        <div className="flex items-center gap-2">
-          {Array.from({ length: 5 }, (_, i) => {
-            const ratingValue = (i + 1) * 2
-            return (
+  return (
+    <div className="relative" ref={menuRef}>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="h-14 px-8 bg-blue-600 hover:bg-blue-500 text-white font-black rounded-xl uppercase tracking-wider flex items-center gap-2 transition-all"
+      >
+        <Star className="h-5 w-5 fill-white" />
+        {userRating ? `Rated: ${userRating}/10` : "Rate Game"}
+      </button>
+
+      {isOpen && (
+        <div className="absolute top-full mt-2 left-0 bg-zinc-900 border border-white/10 rounded-xl p-4 shadow-lg z-50">
+          <div className="flex gap-2">
+            {stars.map((rating) => (
               <button
-                key={i}
-                onMouseEnter={() => setHoverRating(ratingValue)}
+                key={rating}
+                onMouseEnter={() => setHoverRating(rating)}
                 onMouseLeave={() => setHoverRating(0)}
-                onClick={() => handleRatingSubmit(ratingValue)}
-                className="transition-all duration-200 hover:scale-125"
+                onClick={() => handleRating(rating)}
+                className="transition-all hover:scale-110"
               >
                 <Star
                   size={28}
-                  className={`transition-all duration-200 ${
-                    hoverRating >= ratingValue
-                      ? "fill-blue-500 text-blue-500"
-                      : "fill-zinc-700 text-zinc-700"
-                  }`}
+                  className={`${
+                    rating <= displayRating
+                      ? "fill-yellow-400 text-yellow-400"
+                      : "text-zinc-600"
+                  } transition-all`}
                 />
               </button>
-            )
-          })}
+            ))}
+          </div>
+          <p className="text-center text-white font-bold mt-2 text-sm">
+            {displayRating > 0 ? `${displayRating}/10` : "Select rating"}
+          </p>
         </div>
       )}
     </div>

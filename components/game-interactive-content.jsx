@@ -1,17 +1,22 @@
 "use client"
 
-import { useRef } from "react"
+import { useRef, useState } from "react"
 import GameActionBar from "@/components/game-action-bar"
 import GameReviewsSection from "@/components/game-reviews-section"
 import { ShieldCheck } from "lucide-react"
 
 export default function GameInteractiveContent({ game }) {
   const reviewsSectionRef = useRef(null)
+  const [gameRating, setGameRating] = useState(game.rating)
 
   const handleReviewAdd = (reviewData) => {
     if (reviewsSectionRef.current) {
       reviewsSectionRef.current.addReview(reviewData)
     }
+  }
+
+  const handleRatingChange = (rating) => {
+    setGameRating(rating)
   }
 
   return (
@@ -21,6 +26,7 @@ export default function GameInteractiveContent({ game }) {
         gameId={game.id} 
         gameTitle={game.title}
         onReviewAdd={handleReviewAdd}
+        onRatingChange={handleRatingChange}
       />
 
       {/* Summary */}
