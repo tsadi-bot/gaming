@@ -12,7 +12,7 @@ export default function ReviewModal({ gameTitle, isOpen, onClose, mode, onReview
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    
+
     if (mode === "review") {
       if (!name.trim() || !reviewText.trim()) {
         alert("Please fill in all fields")
@@ -24,11 +24,11 @@ export default function ReviewModal({ gameTitle, isOpen, onClose, mode, onReview
         rating: rating
       })
     }
-    
+
     // Reset form
     setName("")
     setReviewText("")
-    setRating(5)
+    setRating(1)
     onClose()
   }
 
@@ -102,11 +102,10 @@ export default function ReviewModal({ gameTitle, isOpen, onClose, mode, onReview
                   className="transition-colors"
                 >
                   <Star
-                    className={`h-8 w-8 ${
-                      star <= (hoveredRating ?? rating)
+                    className={`h-8 w-8 ${star <= (hoveredRating ?? rating)
                         ? "fill-blue-500 text-blue-500"
                         : "text-zinc-600"
-                    }`}
+                      }`}
                   />
                 </button>
               ))}
