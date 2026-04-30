@@ -1,10 +1,18 @@
 "use client";
 
 import { Star, ArrowRight } from "lucide-react";
-import Link from "next/link"; // Εισαγωγή του Link
+import Link from "next/link";
+import { useGameDataContext } from "@/lib/GameContext";
 
 
 export default function GameCard({ game }) {
+  const { getGameRating, isHydrated } = useGameDataContext()
+  
+  // Use user rating if available, otherwise use the game's default rating
+  const userRating = getGameRating(game.slug)
+  const displayRating = userRating > 0 ? userRating : game.rating
+  const hasUserRating = isHydrated && userRating > 0
+
   return (
     // Τυλίγουμε όλη την κάρτα με Link για να είναι clickable παντού
     <Link href={`/game/${game.slug}`} className="group block h-full">
@@ -20,9 +28,9 @@ export default function GameCard({ game }) {
           />
           
           {/* Rating Badge */}
-          <div className="absolute top-3 right-3 bg-black/80 backdrop-blur-md px-2 py-1 rounded-lg border border-white/10 flex items-center gap-1.5 shadow-xl">
-            <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
-            <span className="text-blue-400 text-xs font-black tracking-tighter">{game.rating}</span>
+          <div className={`absolute top-3 right-3 bg-black/80 backdrop-blur-md px-2 py-1 rounded-lg border flex items-center gap-1.5 shadow-xl ${hasUserRating ? 'border-blue-500/30' : 'border-white/10'}`}>
+            <Star className={`w-3 h-3 ${hasUserRating ? 'text-blue-400 fill-blue-400' : 'text-yellow-400 fill-yellow-400'}`} />
+            <span className="text-blue-400 text-xs font-black tracking-tighter">{displayRating}</span>
           </div>
 
           <div className="absolute inset-0 bg-gradient-to-t from-[#111] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />

@@ -26,10 +26,6 @@ export default function RateGameButton({ onRate, gameId }) {
     setGameRating(gameId, rating)
     onRate?.(rating)
     setIsOpen(false)
-    // Dispatch event to notify other components about the rating change
-    window.dispatchEvent(new CustomEvent('gameRatingUpdated', { 
-      detail: { gameId, rating } 
-    }))
   }
 
   const stars = [2, 4, 6, 8, 10]
