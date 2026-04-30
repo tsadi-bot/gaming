@@ -18,7 +18,7 @@ export default function GameInteractiveContent({ game }) {
     <div className="space-y-12">
       {/* Action Bar */}
       <GameActionBar 
-        gameId={game.id} 
+        gameId={game.slug} 
         gameTitle={game.title}
         onReviewAdd={handleReviewAdd}
       />
